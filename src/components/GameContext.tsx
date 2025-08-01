@@ -43,7 +43,7 @@ const initialState: GameState = {
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_PLAYER_NAME':
-      return { ...state, playerName: action.payload };
+      return { ...state, playerName: action.payload, phase: 'toss' };
     
     case 'SET_TOSS_CHOICE':
       return { ...state, playerChoice: action.payload, phase: 'toss' };
