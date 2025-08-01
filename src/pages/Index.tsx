@@ -1,13 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { GameProvider, useGame } from '@/components/GameContext';
+import { WelcomePage } from '@/components/WelcomePage';
+import { TossPage } from '@/components/TossPage';
+import { GamePage } from '@/components/GamePage';
+
+function GameRouter() {
+  const { state } = useGame();
+
+  switch (state.phase) {
+    case 'welcome':
+      return <WelcomePage />;
+    case 'toss':
+    case 'roleSelect':
+      return <TossPage />;
+    case 'playing':
+    case 'gameOver':
+      return <GamePage />;
+    default:
+      return <WelcomePage />;
+  }
+}
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <GameProvider>
+      <GameRouter />
+    </GameProvider>
   );
 };
 
