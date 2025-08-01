@@ -12,25 +12,38 @@ export function GamePage() {
   const [showComputerThinking, setShowComputerThinking] = useState(false);
   const { state, dispatch } = useGame();
 
-  // Handle computer turn automatically
+  // Handle computer turn automatically - only generate computer's guess
   useEffect(() => {
-    if (!state.isPlayerTurn && state.phase === 'playing' && !isRevealing) {
+    if (!state.isPlayerTurn && state.phase === 'playing' && !isRevealing && !computerGuess) {
+      setShowComputerThinking(true);
+      
+      setTimeout(() => {
+        const compGuess = Math.floor(Math.random() * 6) + 1;
+        setComputerGuess(compGuess);
+        setShowComputerThinking(false);
+      }, 2000);
+    }
+  }, [state.isPlayerTurn, state.phase, isRevealing, computerGuess, dispatch]);
+
+  const handleNumberClick = (number: number) => {
+    if (isRevealing) return;
+    
+    if (state.isPlayerTurn) {
+      // Player's turn - player guesses, computer responds
+      setPlayerGuess(number);
       setIsRevealing(true);
       setShowComputerThinking(true);
       
       setTimeout(() => {
         const compGuess = Math.floor(Math.random() * 6) + 1;
-        const playerGuessNum = Math.floor(Math.random() * 6) + 1;
-        
         setComputerGuess(compGuess);
-        setPlayerGuess(playerGuessNum);
         setShowComputerThinking(false);
         
         setTimeout(() => {
           dispatch({ 
             type: 'MAKE_GUESS', 
             payload: { 
-              playerGuess: playerGuessNum, 
+              playerGuess: number, 
               computerGuess: compGuess 
             } 
           });
@@ -41,31 +54,18 @@ export function GamePage() {
             setIsRevealing(false);
           }, 1500);
         }, 1500);
-      }, 2000);
-    }
-  }, [state.isPlayerTurn, state.phase, isRevealing, dispatch]);
-
-  const handleNumberClick = (number: number) => {
-    if (isRevealing || !state.isPlayerTurn) return;
-    
-    setPlayerGuess(number);
-    setIsRevealing(true);
-    
-    // Show computer thinking
-    setShowComputerThinking(true);
-    
-    setTimeout(() => {
-      const compGuess = Math.floor(Math.random() * 6) + 1;
-      setComputerGuess(compGuess);
-      setShowComputerThinking(false);
+      }, 1000);
+    } else {
+      // Computer's turn - computer already guessed, player tries to match
+      setPlayerGuess(number);
+      setIsRevealing(true);
       
-      // Show both numbers for a moment, then process
       setTimeout(() => {
         dispatch({ 
           type: 'MAKE_GUESS', 
           payload: { 
             playerGuess: number, 
-            computerGuess: compGuess 
+            computerGuess: computerGuess! 
           } 
         });
         
@@ -75,7 +75,7 @@ export function GamePage() {
           setIsRevealing(false);
         }, 1500);
       }, 1500);
-    }, 1000);
+    }
   };
 
   const getCurrentPlayerName = () => {
@@ -170,13 +170,17 @@ export function GamePage() {
         <Card className="shadow-lg border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">
-              {state.isPlayerTurn ? 'Choose Your Number' : 'Computer is Thinking...'}
+              {state.isPlayerTurn 
+                ? 'Choose Your Number' 
+                : computerGuess 
+                  ? `Computer chose ${computerGuess}! Choose your number to match`
+                  : 'Computer is Thinking...'}
             </CardTitle>
           </CardHeader>
           
           <CardContent className="space-y-6">
             {/* Number Selection */}
-            {state.isPlayerTurn && !isRevealing && (
+            {(state.isPlayerTurn || (!state.isPlayerTurn && computerGuess)) && !isRevealing && (
               <div className="grid grid-cols-3 gap-4">
                 {numbers.map((number) => (
                   <Button
