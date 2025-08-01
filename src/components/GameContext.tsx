@@ -74,24 +74,41 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const isMatch = playerGuess === computerGuess;
       
       if (isMatch) {
-        // Current player is out
-        const gameResult = state.isPlayerTurn ? 'lose' : 'win';
-        return {
-          ...state,
-          gameResult,
-          phase: 'gameOver'
-        };
+        // Current player is out - switch to other player or end game
+        if (state.isPlayerTurn) {
+          // Player is out, now computer's turn if this is first round
+          if (state.currentRound === 1) {
+            return {
+              ...state,
+              isPlayerTurn: false,
+              currentRound: state.currentRound + 1
+            };
+          } else {
+            // Both players have played, computer wins
+            return {
+              ...state,
+              gameResult: 'lose',
+              phase: 'gameOver'
+            };
+          }
+        } else {
+          // Computer is out - determine winner by score
+          const gameResult = state.playerScore > state.computerScore ? 'win' : 'lose';
+          return {
+            ...state,
+            gameResult,
+            phase: 'gameOver'
+          };
+        }
       } else {
-        // Add to score and switch turns
+        // Add to score, same player continues
         const newPlayerScore = state.isPlayerTurn ? state.playerScore + playerGuess : state.playerScore;
         const newComputerScore = !state.isPlayerTurn ? state.computerScore + computerGuess : state.computerScore;
         
         return {
           ...state,
           playerScore: newPlayerScore,
-          computerScore: newComputerScore,
-          isPlayerTurn: !state.isPlayerTurn,
-          currentRound: state.currentRound + 1
+          computerScore: newComputerScore
         };
       }
     

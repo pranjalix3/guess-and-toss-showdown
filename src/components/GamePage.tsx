@@ -12,8 +12,41 @@ export function GamePage() {
   const [showComputerThinking, setShowComputerThinking] = useState(false);
   const { state, dispatch } = useGame();
 
+  // Handle computer turn automatically
+  useEffect(() => {
+    if (!state.isPlayerTurn && state.phase === 'playing' && !isRevealing) {
+      setIsRevealing(true);
+      setShowComputerThinking(true);
+      
+      setTimeout(() => {
+        const compGuess = Math.floor(Math.random() * 6) + 1;
+        const playerGuessNum = Math.floor(Math.random() * 6) + 1;
+        
+        setComputerGuess(compGuess);
+        setPlayerGuess(playerGuessNum);
+        setShowComputerThinking(false);
+        
+        setTimeout(() => {
+          dispatch({ 
+            type: 'MAKE_GUESS', 
+            payload: { 
+              playerGuess: playerGuessNum, 
+              computerGuess: compGuess 
+            } 
+          });
+          
+          setTimeout(() => {
+            setPlayerGuess(null);
+            setComputerGuess(null);
+            setIsRevealing(false);
+          }, 1500);
+        }, 1500);
+      }, 2000);
+    }
+  }, [state.isPlayerTurn, state.phase, isRevealing, dispatch]);
+
   const handleNumberClick = (number: number) => {
-    if (isRevealing) return;
+    if (isRevealing || !state.isPlayerTurn) return;
     
     setPlayerGuess(number);
     setIsRevealing(true);
@@ -193,7 +226,7 @@ export function GamePage() {
                       </p>
                     ) : (
                       <p className="text-lg text-muted-foreground">
-                        ✅ No match! {playerGuess} added to {state.playerName}'s score
+                        ✅ No match! {playerGuess} added to {getCurrentPlayerName()}'s score
                       </p>
                     )}
                   </div>
