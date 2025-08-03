@@ -173,7 +173,7 @@ export function GamePage() {
               {state.isPlayerTurn 
                 ? 'Choose Your Number' 
                 : computerGuess 
-                  ? `Computer chose ${computerGuess}! Choose your number to match`
+                  ? 'Computer has chosen! Now pick your number'
                   : 'Computer is Thinking...'}
             </CardTitle>
           </CardHeader>
